@@ -11,10 +11,23 @@ const check = input => {
 };
 
 suite('XdrParser', () => {
-  test('const declaration (with constant)', () => check('const REMOTE_STRING_MAX = 4194304;'));
+  test('const declaration (with decimal constant)', () => check('const REMOTE_STRING_MAX = 4194304;'));
   test('const declaration (with identifier)', () => check('const REMOTE_STRING_MAX = VIR_SECURITY_MODEL_BUFLEN;'));
+  test('const declaration (hex constant)', () => check('const REMOTE_PROGRAM = 0x20008086;'));
+  test('const declaration (zero)', () => check('const REMOTE_PROGRAM = 0;'));
   test('typedef fixed size', () => check('typedef string remote_nonnull_string<REMOTE_STRING_MAX>;'));
   test('typedef pointer', () => check('typedef remote_nonnull_string *remote_string;'));
+
+  test('libvirt types', () => {
+    check(`
+      struct libvirt_types {
+          char a_char;
+          unsigned char a_uchar;
+          short a_short;
+          unsigned short a_ushort;
+      };
+    `);
+  });
 
   test('struct', () => {
     check(`
