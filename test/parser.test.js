@@ -11,7 +11,8 @@ const check = input => {
 };
 
 suite('XdrParser', () => {
-  test('const declaration', () => check('const REMOTE_STRING_MAX = 4194304;'));
+  test('const declaration (with constant)', () => check('const REMOTE_STRING_MAX = 4194304;'));
+  test('const declaration (with identifier)', () => check('const REMOTE_STRING_MAX = VIR_SECURITY_MODEL_BUFLEN;'));
   test('typedef fixed size', () => check('typedef string remote_nonnull_string<REMOTE_STRING_MAX>;'));
   test('typedef pointer', () => check('typedef remote_nonnull_string *remote_string;'));
 
@@ -81,4 +82,6 @@ suite('XdrParser', () => {
       typedef string remote_nonnull_string<REMOTE_STRING_MAX>;
     `);
   });
+
+  test('include section', () => check('%#include <libvirt/libvirt.h>'));
 });
