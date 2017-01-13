@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+'use strict';
+const parse = require('../lib/xdr_parser'),
+      fs = require('fs');
+
+if (process.argv.length !== 3) {
+  console.log('usage: xdr-parse <path>');
+  process.exit(1);
+}
+
+const path = process.argv[2];
+const input = fs.readFileSync(path, 'utf-8');
+const result = parse(input.toString());
+console.dir(result, { depth: null });
+
