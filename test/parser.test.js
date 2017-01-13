@@ -55,4 +55,30 @@ suite('XdrParser', () => {
     };
     `);
   });
+
+  test('comments (single line)', () => check('/* this is a test single line comment */'));
+  test('comments (multiline)', () => {
+    check(`
+    /* Notes:
+     *
+     * (1) The protocol is internal and may change at any time, without
+     * notice.  Do not use it.  Instead link to libvirt and use the remote
+     * driver.
+     *
+     * (2) See bottom of this file for a description of the home-brew RPC.
+     *
+     * (3) Authentication/encryption is done outside this protocol.
+     *
+     * (4) For namespace reasons, all exported names begin 'remote_' or
+     * 'REMOTE_'.  This makes names quite long.
+     */
+    `);
+  });
+
+  test('comment (plus definiton)', () => {
+    check(`
+      /* A long string, which may NOT be NULL. */
+      typedef string remote_nonnull_string<REMOTE_STRING_MAX>;
+    `);
+  });
 });
