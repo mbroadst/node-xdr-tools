@@ -154,4 +154,36 @@ suite('protocol', function() {
       // expect(encode(Hyper.MIN_VALUE)).to.eql([0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00]);
     });
   });
+
+  suite('struct', function() {
+    test('decode', function() {
+      p.defineStruct('myStruct', [
+        { type: 'int', name: 'an_int' },
+        { type: 'string', name: 'a_string' }
+      ]);
+
+      let data = new Buffer([
+        0x00, 0x00, 0x00, 0x01,
+        0x00, 0x00, 0x00, 0x01, 0x41, 0x00, 0x00, 0x00
+      ]);
+
+      let reader = new p.Reader(data);
+      expect(reader.myStruct()).to.eql({ an_int: 1, a_string: 'A' });
+    });
+
+    test('encode', function() {
+      p.defineStruct('myStruct', [
+        { type: 'int', name: 'an_int' },
+        { type: 'string', name: 'a_string' }
+      ]);
+
+      let data = new Buffer([
+        0x00, 0x00, 0x00, 0x01,
+        0x00, 0x00, 0x00, 0x01, 0x41, 0x00, 0x00, 0x00
+      ]);
+
+      let writer = new p.Writer();
+      expect(writer.myStruct({ an_int: 1, a_string: 'A' }).get()).to.eql(data);
+    });
+  });
 });
