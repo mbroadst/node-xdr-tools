@@ -1,13 +1,14 @@
 {
-  "name": "xdr",
+  "name": "xdr-tools",
   "version": "0.0.1",
-  "description": "",
+  "description": "A parser and generator for the XDR format",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Matt Broadstone <mbroadst@gmail.com>",
   "license": "MIT",
+  "bin": {
+    "xdr-gen": "./bin/xdr-gen",
+    "xdr-parse": "./bin/xdr-parse"
+  },
   "dependencies": {
     "chevrotain": "^0.21.0"
   },
@@ -17,4 +18,3 @@
     "mocha": "^3.2.0"
   }
 }
-
