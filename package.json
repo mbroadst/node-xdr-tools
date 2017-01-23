@@ -1,6 +1,6 @@
 {
   "name": "xdr-tools",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A parser and generator for the XDR format",
   "main": "index.js",
   "author": "Matt Broadstone <mbroadst@gmail.com>",
