@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+'use strict';
+const parse = require('../lib/xdr_parser'),
+      generate = require('../lib/xdr_generator'),
+      fs = require('fs');
+
+if (process.argv.length !== 3) {
+  console.log('usage: gen-api <path>');
+  process.exit(1);
+}
+
+const specPath = process.argv[2];
+const input = fs.readFileSync(specPath, 'utf-8');
+const spec = parse(input.toString()).value;
+process.stdout.write(generate(spec));
