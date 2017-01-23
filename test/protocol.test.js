@@ -3,11 +3,11 @@ const p = require('../lib/protocol_base'),
       expect = require('chai').expect;
 
 function buildEncoder(type) {
-  return function(value) { let writer = new p.Writer(); return writer[type](value).get(); };
+  return function(value, size) { let writer = new p.Writer(); return writer[type](value, size).get(); };
 }
 
 function buildDecoder(type) {
-  return function(value) { let reader = new p.Reader(value); return reader[type](); };
+  return function(value, size) { let reader = new p.Reader(value); return reader[type](size); };
 }
 
 suite('protocol', function() {
@@ -155,13 +155,47 @@ suite('protocol', function() {
     });
   });
 
-  suite('struct', function() {
+  suite.only('opaque', function() {
     test('decode', function() {
+      let decode = buildDecoder('opaque');
+      expect(decode(new Buffer([ 0x00, 0x00, 0x00, 0x00 ]), 3)).to.eql(new Buffer([ 0x00, 0x00, 0x00 ]));
+      expect(decode(new Buffer([ 0x00, 0x00, 0x01, 0x00 ]), 3)).to.eql(new Buffer([ 0x00, 0x00, 0x01 ]));
+    });
+
+    test('encode', function() {
+      let encode = buildEncoder('opaque');
+      expect(encode(new Buffer([ 0x00, 0x00, 0x00 ]), 3)).to.eql(new Buffer([ 0x00, 0x00, 0x00, 0x00 ]));
+      expect(encode(new Buffer([ 0x00, 0x00, 0x01 ]), 3)).to.eql(new Buffer([ 0x00, 0x00, 0x01, 0x00 ]));
+    });
+  });
+
+  // suite('variable length opaque', function() {
+  //   test('decode', function() {
+  //     let decode = buildDecoder('opaque');
+  //     expect(decode(new Buffer([ 0x00, 0x00, 0x00, 0x00 ]), 0)).to.eql(new Buffer([]));
+  //     // expect(decode(new Buffer([ 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00]))).to.eql(new Buffer([ 0x00 ]));
+  //     // expect(decode(new Buffer([ 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00]))).to.eql(new Buffer([ 0x01 ]));
+  //     // expect(decode(new Buffer([ 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00]))).to.eql(new Buffer([ 0x00, 0x01 ]));
+  //   });
+
+  //   test('encode', function() {
+  //     let encode = buildEncoder('opaque');
+  //     expect(encode(new Buffer([]))).to.eql(new Buffer([ 0x00, 0x00, 0x00, 0x00 ]));
+  //     // expect(encode(new Buffer([ 0x00 ]))).to.eql(new Buffer([ 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 ]));
+  //     // expect(encode(new Buffer([ 0x01 ]))).to.eql(new Buffer([ 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00 ]));
+  //     // expect(encode(new Buffer([ 0x00, 0x01 ]))).to.eql(new Buffer([ 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00 ]));
+  //   });
+  // });
+
+  suite('struct', function() {
+    setup(function() {
       p.defineStruct('myStruct', [
         { type: 'int', name: 'an_int' },
         { type: 'string', name: 'a_string' }
       ]);
+    });
 
+    test('decode', function() {
       let data = new Buffer([
         0x00, 0x00, 0x00, 0x01,
         0x00, 0x00, 0x00, 0x01, 0x41, 0x00, 0x00, 0x00
@@ -172,11 +206,6 @@ suite('protocol', function() {
     });
 
     test('encode', function() {
-      p.defineStruct('myStruct', [
-        { type: 'int', name: 'an_int' },
-        { type: 'string', name: 'a_string' }
-      ]);
-
       let data = new Buffer([
         0x00, 0x00, 0x00, 0x01,
         0x00, 0x00, 0x00, 0x01, 0x41, 0x00, 0x00, 0x00
@@ -184,6 +213,28 @@ suite('protocol', function() {
 
       let writer = new p.Writer();
       expect(writer.myStruct({ an_int: 1, a_string: 'A' }).get()).to.eql(data);
+    });
+  });
+
+  suite('enum', function() {
+    setup(function() {
+      p.defineEnum('myEnum', [
+        { name: 'RED', value: '42' },
+        { name: 'GREEN', value: '96' }
+      ]);
+    });
+
+    test('decode', function() {
+      let reader =
+        new p.Reader(new Buffer([ 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x60 ]));
+      expect(reader.myEnum()).to.eql(42);
+      expect(reader.myEnum()).to.eql(96);
+    });
+
+    test('encode', function() {
+      let writer = new p.Writer();
+      expect(writer.myEnum('RED').myEnum('GREEN').get())
+        .to.eql(new Buffer([ 0x00, 0x00, 0x00, 0x2a, 0x00, 0x00, 0x00, 0x60 ]));
     });
   });
 });
